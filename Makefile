@@ -1,46 +1,22 @@
 # slock - simple screen locker
 # See LICENSE file for copyright and license details.
 
-include config.mk
+INCS = -I. -I/usr/include 
+LIBS = -L/usr/lib -lc -lcrypt -lX11 -lXext -lXrandr
 
-SRC = slock.c ${COMPATSRC}
-OBJ = ${SRC:.c=.o}
+CFLAGS = -std=c99 -pedantic -Wall
+CFLAGS += ${INCLUDE} ${LIBS}
+CFLAGS += -s -Ofast -march=native -mtune=native -flto
 
-all: slock
+install: slock
+	cp -f slock /usr/bin
+	chmod 755 /usr/bin/slock
+	chmod u+s /usr/bin/slock
 
-.c.o:
-	${CC} -c ${CFLAGS} $<
-
-${OBJ}: config.h config.mk arg.h util.h
-
-config.h:
-	cp config.def.h $@
-
-slock: ${OBJ}
-	${CC} -o $@ ${OBJ} ${LDFLAGS}
-
-clean:
-	rm -f slock ${OBJ} slock-${VERSION}.tar.gz
-
-dist: clean
-	mkdir -p slock-${VERSION}
-	cp -R LICENSE Makefile README slock.1 config.mk \
-		${SRC} config.def.h arg.h util.h slock-${VERSION}
-	tar -cf slock-${VERSION}.tar slock-${VERSION}
-	gzip slock-${VERSION}.tar
-	rm -rf slock-${VERSION}
-
-install: all
-	mkdir -p ${DESTDIR}${PREFIX}/bin
-	cp -f slock ${DESTDIR}${PREFIX}/bin
-	chmod 755 ${DESTDIR}${PREFIX}/bin/slock
-	chmod u+s ${DESTDIR}${PREFIX}/bin/slock
-	mkdir -p ${DESTDIR}${MANPREFIX}/man1
-	sed "s/VERSION/${VERSION}/g" <slock.1 >${DESTDIR}${MANPREFIX}/man1/slock.1
-	chmod 644 ${DESTDIR}${MANPREFIX}/man1/slock.1
+slock: slock.c
+	${CC} slock.c -o slock ${CFLAGS}
 
 uninstall:
-	rm -f ${DESTDIR}${PREFIX}/bin/slock
-	rm -f ${DESTDIR}${MANPREFIX}/man1/slock.1
+	rm -f /usr/bin/slock slock
 
-.PHONY: all clean dist install uninstall
+.PHONY: install uninstall

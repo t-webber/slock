@@ -1,22 +1,20 @@
-# slock - simple screen locker
-# See LICENSE file for copyright and license details.
-
 INCS = -I. -I/usr/include 
 LIBS = -L/usr/lib -lc -lcrypt -lX11 -lXext -lXrandr
 
 CFLAGS = -std=c99 -pedantic -Wall
-CFLAGS += ${INCLUDE} ${LIBS}
+CFLAGS += $(INCLUDE) $(LIBS)
 CFLAGS += -s -Ofast -march=native -mtune=native -flto
 
-install: slock
-	cp -f slock /usr/bin
-	chmod 755 /usr/bin/slock
-	chmod u+s /usr/bin/slock
+OUT := $(BIN)/slock
 
-slock: slock.c
-	${CC} slock.c -o slock ${CFLAGS}
+.PHONY: clean
 
-uninstall:
-	rm -f /usr/bin/slock slock
+$(OUT): slock.c
+	$(CC) $(CFLAGS) $< -o $@
+	sudo chown root:root $@
+	sudo chmod 755 $@
+	sudo chmod u+s $@
 
-.PHONY: install uninstall
+clean:
+	rm -f $(BIN)/slock slock
+
